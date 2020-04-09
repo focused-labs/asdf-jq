@@ -1,0 +1,3 @@
+authors:
+  av: Austin Vance; austin
+email_template: '{{with .Username}}{{toLower .}}{{end}}@focusedlabs.io'
