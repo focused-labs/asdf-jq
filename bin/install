@@ -8,6 +8,7 @@ set -o nounset
 set -o pipefail
 
 readonly BINARY_NAME="jq"
+readonly RELEASES_URL="https://api.github.com/repos/stedolan/jq/releases"
 readonly DOWNLOAD_BASE_URL="https://github.com/stedolan/jq/releases/download"
 
 readonly TMP_DOWNLOAD_DIR="$(mktemp -d)"
@@ -18,7 +19,7 @@ error_exit() {
   exit "${2:-1}"
 }
 
-platform() {
+get_platform() {
   local -r os=$(
     case "$(uname | tr '[:upper:]' '[:lower:]')" in
       darwin) echo "osx" ;;
@@ -26,15 +27,101 @@ platform() {
     esac
   )
 
-  echo "${os}-amd64"
+  echo "${os}"
+  return
+}
+get_arch(){
+  declare arch="$(uname -m)"
+  if [ "$arch" == 'x86_64' ]; then
+    echo '64'
+  elif [ "$arch" == 'i386' ]; then
+    echo '32'
+  elif [ "$arch" == 'i686' ]; then
+    echo '32'
+  else
+    error_exit 'There are no official releases for your architecture'
+  fi
+  return
 }
 
+get_assets_url() {
+  declare install_version="$1"
+
+  declare releases_json=$(curl -s "$RELEASES_URL")
+
+  declare -a asset_urls=($(echo $releases_json | grep -oP "(?<=\"assets_url\": \")[^\"]{8,}(?=\",)"))
+  declare -a tag_names=( $(echo $releases_json | grep -oP "(?<=\"tag_name\": \")[^\"]{3,}(?=\",)"))
+
+  for ((index=0; index<${#tag_names[@]}; index++)); do
+    if [ "${tag_names[$index]}" = "$install_version" ]; then
+      echo "${asset_urls[$index]}"
+      return
+    fi
+  done
+  error_exit 'Given version did not match any releases. Try list-all to see available options'
+}
+find_all_asset_names() {
+  declare install_version="$1"
+
+  declare assets_url="$(get_assets_url $install_version)"
+  if [ "$assets_url" == "" ]; then
+    error_exit "No URL found to release $install_version"
+  fi
+  declare assets_json="$(curl -s $assets_url)"
+  declare -a asset_names=($(echo $assets_json | grep -oP "(?<=\"name\": \")[^\"]{3,}(?=\",)"))
+  echo ${asset_names[@]}
+  return
+}
+filter_assets() {
+  declare -a inArr=($1)
+  declare -a outArr=()
+
+  declare platform="$2"
+  declare arch="$3"
+  for i in "${inArr[@]}"; do
+    if [ "$arch" == "32" ]; then
+      declare filteredString=$(echo "$i" | grep -oP "$platform.*((86(?!_64))|32)")
+    else
+      declare filteredString=$(echo "$i" | grep -oP "$platform.*(64)")
+    fi
+    if [ "$filteredString" != "" ]; then
+      outArr+=("$i")
+    fi
+  done
+  echo "${outArr[@]}"
+}
+find_file_name() {
+  declare install_version="$1"
+  declare arch="$(get_arch)"
+  declare platform="$(get_platform)"
+  
+  declare assets="$(find_all_asset_names "$install_version")"  
+  declare -a usableAssets=($(filter_assets "$assets" "$platform" "$arch"))
+    
+  case "${#usableAssets[@]}" in
+    "0")
+      error_exit "No releases in version $install_version matching $platform $arch-bits"
+      ;;
+    "1")
+      ;;
+    *)
+      echo "${usableAssets[@]}" >&2
+      echo "Multiple releases found matching $platform $arch-bits, choosing first" >&2
+      ;;
+  esac
+  
+  echo "${usableAssets[0]}"
+}
 install() {
   local -r install_type="$1"
   local -r install_version="$2"
   local -r install_path="$3"
   local -r install_path_bin="${install_path}/bin"
-  local -r download_url="${DOWNLOAD_BASE_URL}/${install_version}/${BINARY_NAME}-$(platform)"
+  declare file_name="$(find_file_name "$install_version")"
+  if [ "$file_name" == "" ]; then
+    error_exit "Could not download release"
+  fi
+  local -r download_url="${DOWNLOAD_BASE_URL}/${install_version}/${file_name}"
   local -r download_path="${TMP_DOWNLOAD_DIR}/${BINARY_NAME}"
 
   [ "$install_type" != "version" ] && error_exit "Error: source installs are not supported"
