@@ -23,5 +23,8 @@ list_versions() {
   echo "$(eval $cmd | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
 }
 
-#
-echo "$(list_versions | sort_versions | tr '\n' ' ')"
+filter_jq(){
+	sed -n -E 's/jq-(.+)$/\1/p'
+}
+
+echo "$(list_versions | sort_versions | filter_jq | tr '\n' ' ')"
