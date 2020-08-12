@@ -44,7 +44,7 @@ get_arch(){
 get_assets_url() {
   declare install_version="$1"
 
-  declare releases_json=$(curl -u AZMCode:d549728af78757e164b25a72873c455e52ac1715 -s "$RELEASES_URL")
+  declare releases_json=$(curl -u AZMCode:$GITHUB_TOKEN -s "$RELEASES_URL")
 
   declare -a asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
   declare -a tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
@@ -64,7 +64,7 @@ find_all_asset_names() {
   if [ -z "$assets_url" ]; then
     error_exit "No URL found for release $install_version"
   fi
-  declare assets_json="$(curl -u AZMCode:d549728af78757e164b25a72873c455e52ac1715 -s "$assets_url")"
+  declare assets_json="$(curl -u AZMCode:$GITHUB_TOKEN -s "$assets_url")"
   declare -a output=($(echo "$assets_json" | sed -n -E 's/\s*"browser_download_url":\s{0,2}"([^"]{8,})"/\1/p'))
   echo "${output[@]}"
 }
@@ -119,7 +119,7 @@ install() {
   [ "$install_type" != "version" ] && error_exit "Error: source installs are not supported"
 
   echo "Downloading from ${download_url}" >&2
-  curl -u AZMCode:d549728af78757e164b25a72873c455e52ac1715 -fL -o "$download_path" "$download_url"
+  curl -u AZMCode:$GITHUB_TOKEN -fL -o "$download_path" "$download_url"
   if [ $? -eq 0 ]; then
     echo "Installing binary" >&2
     mkdir -p "$install_path_bin"
