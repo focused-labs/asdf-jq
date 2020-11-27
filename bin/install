@@ -18,15 +18,26 @@ error_exit() {
   exit "${2:-1}"
 }
 
+arch_num() {
+  if [ "$(uname -m)" == "x86_64" ]; then
+    echo "64"
+  else
+    echo "32"
+  fi
+}
+
 platform() {
   local -r os=$(
     case "$(uname | tr '[:upper:]' '[:lower:]')" in
-      darwin) echo "osx" ;;
-      *) echo "linux" ;;
+      darwin)  echo "osx-amd64" ;;
+      linux)   echo "linux$(arch_num)" ;;
+      mingw*)  echo "win$(arch_num)" ;;
+      cygwin*) echo "win$(arch_num)" ;;
+      *)       echo "unknown$(arch_num)" ;;
     esac
   )
 
-  echo "${os}-amd64"
+  echo "${os}"
 }
 
 install() {
