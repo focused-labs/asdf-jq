@@ -10,17 +10,13 @@ on:
   workflow_dispatch:
     paths-ignore:
       - '**.md'
-  schedule:
-    - cron: "0 0 * * 3"
 
 jobs:
   plugin_test:
     strategy:
       matrix:
         os: [macOS-latest, ubuntu-latest]
-
     runs-on: ${{ matrix.os }}
-
     steps:
       - name: Running asdf's plugin-test
         uses: asdf-vm/actions/plugin-test@v1.0.1
