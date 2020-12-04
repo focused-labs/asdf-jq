@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 # Shamelessly stolen from https://github.com/beardix/asdf-yq/blob/master/bin/list-all#L7
@@ -47,9 +48,7 @@ get_assets_url() {
   declare releases_json=$(curl -u AZMCode:$GITHUB_TOKEN -s "$RELEASES_URL")
   declare -a asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
   declare -a tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
-  
-  echo "$releases_json" >&2 
-  
+   
   for ((index=0; index<${#tag_names[@]}; index++)); do
     if [ "${tag_names[$index]}" == "jq-$install_version" ]; then
       echo "${asset_urls[$index]}"
@@ -131,5 +130,7 @@ install() {
   fi
 }
 
-#install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
-install version 1.6 ~/.asdf/install
+echo "Testing prescence of curl:" >&2-
+command -v curl >&2
+install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
+#install version 1.6 ~/.asdf/install
