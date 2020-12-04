@@ -51,9 +51,10 @@ get_assets_url() {
     declare releases_json="$(curl -s "$RELEASES_URL" -H 'Authorization: token $GITHUB_API_TOKEN')"
   fi
 
-  declare -a asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
-  echo "$asset_urls" >&2
-  declare -a tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
+  declare -a asset_urls
+  asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
+  declare -a tag_names
+  tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
 
 
   for i in "${!tag_names[@]}"; do
