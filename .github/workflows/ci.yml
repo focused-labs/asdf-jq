@@ -22,17 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install cUrl
-        run:  |
-              if [ "$RUNNER_OS" == "Linux" ]; then
-                sudo apt-get install curl
-              elif [ "$RUNNER_OS" == "macOS" ]; then
-                :
-              else
-                echo "$RUNNER_OS not supported"
-                exit 1
-              fi
-      - name: asdf_plugin_test
+      - name: Running asdf's plugin-test
         uses: asdf-vm/actions/plugin-test@v1.0.1
         with:
           command: jq --version
