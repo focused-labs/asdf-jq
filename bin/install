@@ -96,7 +96,6 @@ find_file_url() {
   declare arch="$(get_arch)"
   declare platform="$(get_platform)"
   declare -a assets=($(find_all_asset_names "$install_version"))
-  echo $assets >&2
   declare -a usableAssets=( "$(filter_assets "${assets[@]}")" )
 
   if [ "${#usableAssets[@]}" == 0 ]; then
