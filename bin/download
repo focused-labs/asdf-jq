@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+declare ASDF_INSTALL_PATH="$ASDF_DOWNLOAD_PATH"
+declare script_folder="$(dirname "$0")"
+. $script_folder/install
