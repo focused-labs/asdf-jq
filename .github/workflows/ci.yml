@@ -20,6 +20,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Silencing git over hex tag names
+        run: "git config advice.objectNameWarning false"
       - name: Running asdf's plugin-test
         uses: asdf-vm/actions/plugin-test@v1.0.1
         with:
