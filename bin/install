@@ -131,10 +131,5 @@ install() {
 }
 
 
-if [ -z "$(command -v carl)" ]; then
-  error_exit "This script depends on curl. Please install it and try again."
-  exit 1
-else
-  install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
-  #install version 1.6 ~/.asdf/install
-fi
+install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
+#install version 1.6 ~/.asdf/install
