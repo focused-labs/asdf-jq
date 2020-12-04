@@ -7,8 +7,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-: "${GITHUB_API_TOKEN:=""}"
-
 readonly RELEASES_URL="https://api.github.com/repos/stedolan/jq/releases"
 
 # https://github.com/rbenv/ruby-build/blob/ac92ec0507fad718e7abcf13540641937ecfef3f/bin/ruby-build#L1201
@@ -18,10 +16,17 @@ sort_versions() {
 }
 
 list_versions() {
-  cmd="curl -fsS --url $RELEASES_URL"
-  [ -n "$GITHUB_API_TOKEN" ] && cmd+=" -H 'Authorization: token $GITHUB_API_TOKEN'"
-  echo "$(eval $cmd | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
+  declare cmd=""
+  if [ -n "$GITHUB_API_TOKEN" ]; then
+    declare releases="$(curl -fsS --url $RELEASES_URL -H "Authorization: token $GITHUB_API_TOKEN")"
+  else
+    declare releases="$(curl -fsS --url $RELEASES_URL)"
+  fi
+  echo "$(echo "$releases" | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
 }
 
-#
-echo "$(list_versions | sort_versions | tr '\n' ' ')"
+filter_jq(){
+	sed -n -E 's/jq-(.+)$/\1/p'
+}
+
+echo "$(list_versions | sort_versions | filter_jq | tr '\n' ' ')"
