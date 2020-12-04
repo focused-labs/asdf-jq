@@ -45,7 +45,6 @@ get_assets_url() {
   declare install_version="$1"
 
   declare releases_json=$(curl -u AZMCode:$GITHUB_TOKEN -s "$RELEASES_URL")
-
   declare -a asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
   declare -a tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
 
