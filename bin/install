@@ -52,9 +52,9 @@ get_assets_url() {
   fi
 
   declare -a asset_urls
-  asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
+  asset_urls=($(echo "$releases_json" | sed -n -E 's/[:blank:]*"assets_url":[:blank:]*"([^"]*)".*/\1/p'))
   declare -a tag_names
-  tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
+  tag_names=($(echo "$releases_json"  | sed -n -E 's/[:blank:]*"tag_name":[:blank:]*"([^"]*)".*/\1/p'))
 
 
   for i in "${!tag_names[@]}"; do
@@ -74,7 +74,7 @@ find_all_asset_names() {
     error_exit "No URL found for release $install_version"
   fi
   declare assets_json="$(curl -s "$assets_url")"
-  declare -a output=($(echo "$assets_json" | sed -n -E 's/\s*"browser_download_url":\s{0,2}"([^"]{8,})"/\1/p'))
+  declare -a output=($(echo "$assets_json" | sed -n -E 's/[:blank:]*"browser_download_url":[:blank:]{0,2}"([^"]{8,})"/\1/p'))
   echo "${output[@]}"
 }
 filter_assets() {
@@ -85,13 +85,13 @@ filter_assets() {
   for i in "${inArr[@]}"; do
     if [ "$arch" == "32" ]; then
       declare filteredUrl="$(echo "$i" | sed -n -E "/.*$platform.*(86|32)/p" | sed -n -E '/.*86_64.*/!p')"
-      declare canPass="$(echo "$filteredUrl" | sed -n -E 's/.*\S.*/true/p')"
+      declare canPass="$(echo "$filteredUrl" | sed -n -E 's/.*[:alpha:].*/true/p')"
       if [ "$canPass" == "true" ]; then
         filteredArr+=("$filteredUrl")
       fi
     else
       declare filteredUrl="$(echo "$i" | sed -n -E "/$platform.*(64)/p")"
-      declare canPass="$(echo "$filteredUrl" | sed -n -E 's/.*\S.*/true/p')"
+      declare canPass="$(echo "$filteredUrl" | sed -n -E 's/.*[:alpha:].*/true/p')"
       if [ "$canPass" == "true" ]; then
         filteredArr+=("$filteredUrl")
       fi
