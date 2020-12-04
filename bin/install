@@ -73,7 +73,12 @@ find_all_asset_names() {
   if [ -z "$assets_url" ]; then
     error_exit "No URL found for release $install_version"
   fi
-  declare assets_json="$(curl -s "$assets_url")"
+
+  if [ -n "$GITHUB_API_TOKEN" ]; then
+    declare assets_json="$(curl -s "$assets_url" -H 'Authorization: token $GITHUB_API_TOKEN')"
+  else
+    declare assets_json="$(curl -s "$assets_url")"
+  fi
   declare -a output=($(echo "$assets_json" | sed -n -E 's/[[:blank:]]*"browser_download_url":[[:blank:]]{0,2}"([^"]{8,})"/\1/p'))
   echo "${output[@]}"
 }
