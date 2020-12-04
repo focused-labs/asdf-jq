@@ -16,7 +16,11 @@ sort_versions() {
 }
 
 list_versions() {
-  echo "$(curl -fsS --url $RELEASES_URL | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
+  declare cmd="curl -fsS --url $RELEASES_URL"
+  if [ -n "$GITHUB_API_TOKEN" ]; then
+    cmd="$cmd -H 'Authorization: token $GITHUB_API_TOKEN'"
+  fi
+  echo "$(eval cmd | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
 }
 
 filter_jq(){
