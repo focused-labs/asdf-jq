@@ -45,17 +45,24 @@ get_arch(){
 get_assets_url() {
   declare install_version="$1"
 
-  declare releases_json=$(curl -s "$RELEASES_URL")
+  if [ -n "$GITHUB_API_TOKEN" ]; then
+    declare releases_json="$(curl -s "$RELEASES_URL")"
+  else
+    declare releases_json="$(curl -s "$RELEASES_URL" -H 'Authorization: token $GITHUB_API_TOKEN')"
+  fi
+
   declare -a asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
+  echo "$asset_urls" >&2
   declare -a tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
-   
-  for ((index=0; index<${#tag_names}; index++)); do
-    echo "${tag_names[$index]}" "==" "jq-$install_version" >&2
-    if [ "${tag_names[$index]}" == "jq-$install_version" ]; then
-      echo "${asset_urls[$index]}"
+
+
+  for i in "${!tag_names[@]}"; do
+    if [ "${tag_names[$i]}" == "jq-$install_version" ]; then
+      echo "${asset_urls[$i]}"
       return
     fi
   done
+
   error_exit  "Given version '$install_version' did not match any releases. Try list-all to see available options"
 }
 find_all_asset_names() {
