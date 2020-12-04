@@ -49,7 +49,7 @@ get_assets_url() {
   declare -a asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
   declare -a tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
    
-  for ((index=0; index<${#tag_names[@]}; index++)); do
+  for ((index=0; index<${#tag_names}; index++)); do
     echo "${tag_names[$index]}" "==" "jq-$install_version" >&2
     if [ "${tag_names[$index]}" == "jq-$install_version" ]; then
       echo "${asset_urls[$index]}"
