@@ -20,7 +20,7 @@ list_versions() {
   if [ -n "$GITHUB_API_TOKEN" ]; then
     cmd="$cmd -H 'Authorization: token $GITHUB_API_TOKEN'"
   fi
-  echo "$(eval cmd | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
+  echo "$(eval "$cmd" | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
 }
 
 filter_jq(){
