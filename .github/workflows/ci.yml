@@ -27,5 +27,4 @@ jobs:
         with:
           command: jq --version
         env:
-          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
