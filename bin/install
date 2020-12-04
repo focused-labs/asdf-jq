@@ -48,14 +48,14 @@ get_assets_url() {
   declare releases_json=$(curl -s "$RELEASES_URL")
   declare -a asset_urls=($(echo "$releases_json" | sed -n -E 's/\s*"assets_url":\s*"([^"]*)".*/\1/p'))
   declare -a tag_names=($(echo "$releases_json"  | sed -n -E 's/\s*"tag_name":\s*"([^"]*)".*/\1/p'))
-   
-  for ((index=0; index<${#tag_names}; index++)); do
-    echo "${tag_names[$index]}" "==" "jq-$install_version" >&2
-    if [ "${tag_names[$index]}" == "jq-$install_version" ]; then
-      echo "${asset_urls[$index]}"
+
+  for i in "${!tag_names[@]}"; do
+    if [ "${tag_names[$i]}" == "jq-$install_version" ]; then
+      echo "${asset_urls[$i]}"
       return
     fi
   done
+
   error_exit  "Given version '$install_version' did not match any releases. Try list-all to see available options"
 }
 find_all_asset_names() {
