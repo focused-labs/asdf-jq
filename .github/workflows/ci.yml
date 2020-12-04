@@ -25,9 +25,9 @@ jobs:
       - name: Install cUrl
         run:  |
               if [ "$RUNNER_OS" == "Linux" ]; then
-                apt install curl
+                sudo apt-get install curl
               elif [ "$RUNNER_OS" == "macOS" ]; then
-                brew install curl
+                #Nothing
               else
                 echo "$RUNNER_OS not supported"
                 exit 1
