@@ -16,8 +16,7 @@ sort_versions() {
 }
 
 list_versions() {
-  declare cmd=""
-  if [ -n "$GITHUB_API_TOKEN" ]; then
+  if [ -n "${GITHUB_API_TOKEN:+defined}" ]; then
     declare releases="$(curl -fsS --url $RELEASES_URL -H "Authorization: token $GITHUB_API_TOKEN")"
   else
     declare releases="$(curl -fsS --url $RELEASES_URL)"
