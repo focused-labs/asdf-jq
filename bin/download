@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
 declare ASDF_INSTALL_PATH="$ASDF_DOWNLOAD_PATH"
 declare script_folder="$(dirname "$0")"
 . $script_folder/install
