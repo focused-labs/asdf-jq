@@ -4,6 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+declare -r JQ_REPO="https://github.com/stedolan/jq.git"
 declare -r RELEASES_URL="https://api.github.com/repos/stedolan/jq/releases"
 
 
@@ -77,9 +78,11 @@ find_all_asset_names() {
 }
 filter_assets() {
   declare -a inArr=($@)
+
   declare platform="$(get_platform)";
   declare arch="$(get_arch)"
   declare -a filteredArr=()
+
   for i in "${inArr[@]}"; do
     if [ "$arch" == "32" ]; then
       declare filteredUrl="$(echo "$i" | sed -n -E "/.*$platform.*(86|32)/p" | sed -n -E '/.*86_64.*/!p')"
@@ -98,9 +101,10 @@ filter_assets() {
   echo "${filteredArr[@]}"
 }
 find_file_url() {
-  declare install_version="$1"
-  declare arch="$(get_arch)"
-  declare platform="$(get_platform)"
+  declare -r install_version="$@"
+
+  declare -r arch="$(get_arch)"
+  declare -r platform="$(get_platform)"
   declare -a assets=($(find_all_asset_names "$install_version"))
   declare -a usableAssets=( "$(filter_assets "${assets[@]}")" )
 
@@ -113,23 +117,27 @@ find_file_url() {
   echo "${usableAssets[0]}"
 }
 download() {
-  local -r download_type="$1"
-  local -r download_version="$2"
-  local -r download_path="$3"
+  declare -r download_type="$1"
+  declare -r download_version="$2"
+  declare -r download_path="$3"
 
-  #For future support of source downloads
-  local -r download_url="$(find_file_url "$download_version" "$download_type")"
-  if [ -z "$download_url" ]; then
-    error_exit "Malformed URL"
-  fi
-
-  if [ "$download_type" != "version" ]; then
-    error_exit "Error: source downloads are not supported"
-  else
+  if [ "$download_type" == "version" ]; then
+    declare -r download_url="$(find_file_url "$download_version")"
+    if [ -z "$download_url" ]; then
+      error_exit "Malformed URL"
+    fi
     mkdir "$download_path/bin"
     curl -fL -o "$download_path/bin/jq" "$download_url"
+  else
+    rm -rf "$download_path"
+    git init "$download_path"
+    cd "$download_path"
+    git remote add origin "$JQ_REPO"
+    git fetch --depth=1 origin "$download_version"
+    git reset --hard "$download_version"
   fi
 }
 
 
 download "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH"
+#download ref 2e01ff1fb69609540b2bdc4e62a60499f2b2fb8e ~/Desktop/jqsource

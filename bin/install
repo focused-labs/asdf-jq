@@ -23,8 +23,17 @@ install() {
     mv "$download_path/bin/jq" "$install_path/bin"
     chmod a+x "$install_path/bin/jq"
   else
-    error_exit "Source installs are not yet supported"
+    cd "$download_path"
+    git submodule update --init --depth=1
+    autoreconf -fi
+    ./configure --disable-maintainer-mode --with-oniguruma=builtin
+    make -j8
+    make check
+    cd "$download_path"
+    mkdir "$install_path/bin/"
+    cp "./jq" "$install_path/bin/"
   fi
 }
 
 install "$ASDF_INSTALL_TYPE" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"
+#install ref ~/Desktop/jqsource ~/Desktop/jqbins
