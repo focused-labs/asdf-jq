@@ -7,7 +7,7 @@
 ## Install
 
 ```
-asdf plugin-add jq https://github.com/AZMCode/asdf-jq.git
+asdf plugin-add jq https://github.com/focused-labs/asdf-jq.git
 ```
 
 ## Use
