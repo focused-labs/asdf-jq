@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+echo "make"
+echo "gcc"
+echo "autoconf"
+echo "libtool"

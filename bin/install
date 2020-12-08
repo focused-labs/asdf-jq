@@ -7,48 +7,33 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly BINARY_NAME="jq"
-readonly DOWNLOAD_BASE_URL="https://github.com/stedolan/jq/releases/download"
-
-readonly TMP_DOWNLOAD_DIR="$(mktemp -d)"
-trap 'rm -rf "${TMP_DOWNLOAD_DIR?}"' EXIT
-
 error_exit() {
   echo "$1" >&2
   exit "${2:-1}"
 }
 
-platform() {
-  local -r os=$(
-    case "$(uname | tr '[:upper:]' '[:lower:]')" in
-      darwin) echo "osx" ;;
-      *) echo "linux" ;;
-    esac
-  )
-
-  echo "${os}-amd64"
-}
 
 install() {
-  local -r install_type="$1"
-  local -r install_version="$2"
-  local -r install_path="$3"
-  local -r install_path_bin="${install_path}/bin"
-  local -r download_url="${DOWNLOAD_BASE_URL}/${install_version}/${BINARY_NAME}-$(platform)"
-  local -r download_path="${TMP_DOWNLOAD_DIR}/${BINARY_NAME}"
+  declare -r install_type="$1"
+  declare -r download_path="$2"
+  declare -r install_path="$3"
 
-  [ "$install_type" != "version" ] && error_exit "Error: source installs are not supported"
-
-  echo "Downloading from ${download_url}"
-  if curl -fL -o "$download_path" "$download_url"; then
-    echo "Installing binary"
-    mkdir -p "$install_path_bin"
-    mv "$download_path" "${install_path_bin}/${BINARY_NAME}"
-    chmod +x "${install_path_bin}/${BINARY_NAME}"
+  if [ "$install_type" == "version" ]; then
+    mkdir "$install_path/bin"
+    mv "$download_path/bin/jq" "$install_path/bin"
+    chmod a+x "$install_path/bin/jq"
   else
-    error_exit "Error: ${BINARY_NAME} version ${install_version} not found"
+    cd "$download_path"
+    git submodule update --init --depth=1
+    autoreconf -fi
+    ./configure --disable-maintainer-mode --with-oniguruma=builtin
+    make -j8
+    make check
+    cd "$download_path"
+    mkdir "$install_path/bin/"
+    cp "./jq" "$install_path/bin/"
   fi
 }
 
-#
-install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
+install "$ASDF_INSTALL_TYPE" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"
+#install ref ~/Desktop/jqsource ~/Desktop/jqbins
