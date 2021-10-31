@@ -21,8 +21,8 @@ error_exit() {
 platform() {
   local -r os=$(
     case "$(uname | tr '[:upper:]' '[:lower:]')" in
-      darwin) echo "osx" ;;
-      *) echo "linux" ;;
+      (darwin) echo "osx" ;;
+      (*) echo "linux" ;;
     esac
   )
 
