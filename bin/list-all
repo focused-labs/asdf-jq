@@ -18,7 +18,7 @@ sort_versions() {
 }
 
 list_versions() {
-  cmd="curl -fsS --url $RELEASES_URL"
+  cmd="curl -fsSL --url $RELEASES_URL"
   [ -n "$GITHUB_API_TOKEN" ] && cmd+=" -H 'Authorization: token $GITHUB_API_TOKEN'"
   echo "$(eval $cmd | grep -oE "tag_name\": *\".*\"," | sed 's/tag_name\": *\"//;s/\",//')"
 }
